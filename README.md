@@ -1,19 +1,19 @@
-# Prerequisites Running Powershell Across Domain Workstations
+## Prerequisites Running Powershell Across Domain Workstations
 
-## There are 4 main reasons you can't run scripts across a Domain
+### There are 4 main reasons you can't run scripts across a Domain
 
-## 1. The workstation you are executing from must have Remote Server Administration Toos (RSAT) Installed
+### 1. The workstation you are executing from must have Remote Server Administration Toos (RSAT) Installed
         https://www.microsoft.com/en-us/download/details.aspx?id=45520
    Additionally modules could be required https://docs.microsoft.com/en-us/powershell/module/activedirectory/?view=windowsserver2019-ps
 
-## 2. Firewall Rules, don't just disable your Windows Firewalls. You can do for each computer but I recommend using Group Policy from the Domain Controller.
+### 2. Firewall Rules, don't just disable your Windows Firewalls. You can do for each computer but I recommend using Group Policy from the Domain Controller.
 
   Computer Configuration >> Policies >> Windows Settings >> Security Settings >> Windows Firewall with Advanced Settings >> Inbound Rules
 
   Right Click >> New Rule >> Predefinded = Windows Remote Management >> Next
   Select the Rule with Profile = Domain, Private >> Next "You can select Defaults till Complete
 
-## 3. Must Enable Windows Remote Management with the 2 settings below
+### 3. Must Enable Windows Remote Management with the 2 settings below
 
   Computer Configuration >> Policies >> Windows Settings >> Security Settings >> System Services >> Windows Remote Management (WS-Management) >> Define Policy Checked and set to Automatic
 
