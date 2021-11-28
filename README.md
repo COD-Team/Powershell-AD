@@ -19,7 +19,7 @@ There are 4 main reasons you can't run scripts across a Domain
 
         Computer Configuration >> Policies >> Administrative Templates >> Windows Components >> Windows Remote Management(WinRM) >> WinRM Service >> Allow remote Server Management through WINRM = Enabled, IPv4 Filter = *, IPv6 Filter = *
 
-NOTE: for the Group Policy, recommend creating New GPO and link to Domain Computers OU (Mine is Named Domain COmputers, yours might be different)
+NOTE: for the Group Policy, recommend creating New GPO and link to Domain Computers OU (Mine is Named Domain Computers, yours might be different)
 
 Group Policy Management Console > Right Click OU (Where the Domain Computers are located), Group Policy Update
         This will take 10-20 minutes to push across entire Domain.
