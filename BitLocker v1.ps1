@@ -1,4 +1,4 @@
-﻿<#
+<#
 
     .DESCRIPTION
         Script runs across all computers on the DOMAIN for Bitlocker Compliance, also checks TPM Module, FIPS Compliance, BIOS and Local Policy Settings. 
@@ -17,6 +17,8 @@
 
     .NOTES
         See README.md (Requires WinRM to be enabled)
+        Author Perkins
+        Last Update 12/27/21
 
     .FUNCTIONALITY
         PowerShell Language
