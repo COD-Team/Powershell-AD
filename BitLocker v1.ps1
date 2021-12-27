@@ -18,16 +18,12 @@
     .NOTES
         See README.md (Requires WinRM to be enabled)
 
-    .NOTES
-        Encryption Method is not returning, Running latest Win10/Server2016. "Manage-BDE -Status" does not return values either.
-        Does return for Standalone Computers, but not Domain Computers. 
-
     .FUNCTIONALITY
         PowerShell Language
         Active Directory
     
     .Link
-    https://github.com/COD-Team/Powershell-AD
+    https://github.com/COD-Team
 
 #>
 
@@ -267,32 +263,6 @@ Invoke-Command -ComputerName $Online -ErrorAction SilentlyContinue -ScriptBlock 
 
 write-host -fore green "LOG saved to: $OutputLOG" 
 write-host -fore green "Script Completed"
-}
-
-$text = @"
-   _____ ____  _____    _                                                     
-  / ____/ __ \|  __ \  (_)         /\                                         
- | |   | |  | | |  | |  _ ___     /  \__      _____  ___  ___  _ __ ___   ___ 
- | |   | |  | | |  | | | / __|   / /\ \ \ /\ / / _ \/ __|/ _ \| '_ ` _ \ / _ \
- | |___| |__| | |__| | | \__ \  / ____ \ V  V /  __/\__ \ (_) | | | | | |  __/
-  \_____\____/|_____/  |_|___/ /_/    \_\_/\_/ \___||___/\___/|_| |_| |_|\___|
-
-"@
-
-for ($i=0;$i -lt $text.length;$i++) {
-if ($i%2) {
- $c = "red"
-}
-elseif ($i%5) {
- $c = "yellow"
-}
-elseif ($i%7) {
- $c = "green"
-}
-else {
-   $c = "white"
-}
-write-host $text[$i] -NoNewline -ForegroundColor $c
 }
 
 Start-Process notepad.exe $OutputLog -NoNewWindow
