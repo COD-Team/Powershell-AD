@@ -6,8 +6,11 @@ TestDomain - Allows you to test your domain to ensure the domain.ps1 script will
 See Videos for more information
 
 https://youtu.be/j_m6jr7uVmc
+
 https://youtu.be/8qKRF7SqlOk
+
 https://youtu.be/4LSMP0gj1IQ
+
 
 
 ## Prerequisites Running Powershell Across Domain Workstations
