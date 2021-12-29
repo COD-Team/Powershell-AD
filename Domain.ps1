@@ -147,43 +147,44 @@ $GetOnline = Invoke-command –ComputerName $DomainComputers.Name -ErrorAction S
     $Offline = Compare-Object -ReferenceObject $DomainComputers.Name -DifferenceObject $Online | Select-Object -ExpandProperty InputObject 
 
 # Display to Screen all Domain Controllers
+if ((Get-ADDomainController -filter * | Select-Object name | Measure-Object | Select-Object Count).count -ge 1) {
     Write-Host -fore Cyan 'Domain Controllers' -Separator "`n" 
     Write-Host -fore Cyan '-----------------' -Separator "`n"
-    Write-Host -fore Cyan $DomainControllers.Name -Separator "`n" 
+    Write-Host -fore Cyan $DomainControllers -Separator "`n" 
     Write-Host '' -Separator "`n"
-
+}
 # Display to Screen all Computers not Accessible 
-    if ($Offline -ge 1) {
-        Write-Host -fore red 'Computers Offline' -Separator "`n" 
-        Write-Host -fore red '-----------------' -Separator "`n" 
-        Write-Host -fore red $Offline -Separator "`n" 
-        Write-Host -fore red '' -Separator "`n"
-        }
+if ($Offline -ge 1) {
+    Write-Host -fore red 'Computers Offline' -Separator "`n" 
+    Write-Host -fore red '-----------------' -Separator "`n" 
+    Write-Host -fore red $Offline -Separator "`n" 
+    Write-Host -fore red '' -Separator "`n"
+}
 # Display to Screen all Computers Accessible, Script will execute functions on all computers listed
-    if ($Online -ge 1) {
-        Write-Host -fore green 'Computers Online' -Separator "`n" 
-        Write-Host -fore green '-----------------' -Separator "`n"
-        Write-Host -fore green $online -Separator "`n" 
-        }
+if ($Online -ge 1) {
+    Write-Host -fore green 'Computers Online' -Separator "`n" 
+    Write-Host -fore green '-----------------' -Separator "`n"
+    Write-Host -fore green $online -Separator "`n" 
+}
 
 #Write to File
+if ((Get-ADDomainController -filter * | Select-Object name | Measure-Object | Select-Object Count).count -ge 1) {
     Write-Output 'Domain Controllers' | Out-File -Append $OutputFile
     Write-Output '-----------------' | Out-File -Append $OutputFile
-    $DomainControllers.Name | Out-File -Append $OutputFile
+    $DomainControllers | Out-File -Append $OutputFile
     Write-Output '' | Out-File -Append $OutputFile
-    
-    if ($Offline -ge 1) {
-        Write-Output 'Computers Offline' | Out-File -Append $OutputFile
-        Write-Output '-----------------' | Out-File -Append $OutputFile
-        $Offline | Out-File -Append $OutputFile
-        Write-Output '' | Out-File -Append $OutputFile
-    }
-    if ($Online -ge 1) {
+}
+if ($Offline -ge 1) {
+    Write-Output 'Computers Offline' | Out-File -Append $OutputFile
+    Write-Output '-----------------' | Out-File -Append $OutputFile
+    $Offline | Out-File -Append $OutputFile
+    Write-Output '' | Out-File -Append $OutputFile
+}
+if ($Online -ge 1) {
     Write-Output 'Computers Online' | Out-File -Append $OutputFile
     Write-Output '-----------------' | Out-File -Append $OutputFile
     $Online | Out-File -Append $OutputFile
-    }
-
+}
 ###################################################################################################################################################################
 Function GetGPResultantSetofPolicy
 {
