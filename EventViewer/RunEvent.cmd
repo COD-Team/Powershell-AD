@@ -1,0 +1,1 @@
+powershell.exe -executionpolicy bypass -nologo -noninteractive -File \\DC2016\Shares\Github\Auditlog\Event-Maintenance.ps1
