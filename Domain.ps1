@@ -35,7 +35,7 @@
     .Link
     https://github.com/COD-Team
     https://youtu.be/8qKRF7SqlOk
-    See README.md
+    See README.MD file https://github.com/COD-Team/Powershell-AD/blob/main/README.md
 
 #>
 
