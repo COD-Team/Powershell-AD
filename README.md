@@ -5,13 +5,11 @@ Domain - Enumerate all Windows Computers, returns infomration required for cyber
 TestDomain - Allows you to test your domain to ensure the domain.ps1 script will execute. 
 See Videos for more information
 
-https://youtu.be/j_m6jr7uVmc
+        https://youtu.be/j_m6jr7uVmc
 
-https://youtu.be/8qKRF7SqlOk
+        https://youtu.be/8qKRF7SqlOk
 
-https://youtu.be/4LSMP0gj1IQ
-
-
+        https://youtu.be/4LSMP0gj1IQ
 
 ## Prerequisites Running Powershell Across Domain Workstations
 
@@ -19,7 +17,8 @@ https://youtu.be/4LSMP0gj1IQ
 
 ### 1. The workstation you are executing from must have Remote Server Administration Toos (RSAT) Installed
         https://www.microsoft.com/en-us/download/details.aspx?id=45520
-   Additionally modules could be required https://docs.microsoft.com/en-us/powershell/module/activedirectory/?view=windowsserver2019-ps
+   Additionally modules could be required 
+        https://docs.microsoft.com/en-us/powershell/module/activedirectory/?view=windowsserver2019-ps
 
 ### 2. Firewall Rules, don't just disable your Windows Firewalls. You can do for each computer but I recommend using Group Policy from the Domain Controller.
 
