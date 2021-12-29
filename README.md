@@ -1,9 +1,10 @@
-<strong>Bitlocker</strong> - Enumerate your entire Domain, returns bitlocker, TPM, BIOS information for each device. 
+<strong>Bitlocker.ps1</strong> - Enumerate your entire Domain, returns bitlocker, TPM, BIOS information for each device. 
 
-<strong>Domain</strong> - Enumerate all Windows Computers, returns infomration required for cybersecurity. Also returns information from Active Directory. 
+<strong>Domain.ps1</strong> - Enumerate all Windows Computers, returns infomration required for cybersecurity. Also returns information from Active Directory. 
 
-<strong>TestDomain</strong> - Allows you to test your domain to ensure the domain.ps1 script will execute. 
-See Videos for more information
+<strong>TestDomain.ps1</strong> - Allows you to test your domain to ensure the domain.ps1 script will execute. 
+
+### See Videos for more information
 
 <strong>PowerShell Testing Domain Accessibility</strong>
 
