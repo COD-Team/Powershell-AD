@@ -79,7 +79,6 @@ $Tasks = @(
     #,"GetSystemInfo"               # Minimal Value as an assessor, SA's might have interest
     #,"GetComputerInfo"             # Minimal Value as an assessor, SA's might have interest
     #,"GetStoppedServices"          # Minimal Value as an assessor, Good Information for Incident Response
-    #,"GetEventLog"                 # System log Only - Create Script specific for EventLogs
     #,"GetVolumes"                  # Minimal Value as an assessor, Good Information for Incident Response
     #,"GetHost"                     # Minimal Value as an assessor, Good Information for Incident Response
     #,"GetDependentServices"
@@ -643,11 +642,6 @@ Function GetUSBActivity
         $Results = Invoke-Command -ComputerName $Online -ErrorAction SilentlyContinue -ScriptBlock {Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Enum\USB\*\*}
         $Results | Select-Object PSComputerName, DeviceDesc, Service, Mfg | out-file -Append $OutputFile
     }
-}
-Function GetEventLog 
-{
-    $Results = Invoke-Command -ComputerName $Online -ErrorAction SilentlyContinue -ScriptBlock {Get-Eventlog -LogName system -Newest 25}
-    $Results | Select-Object PSComputername, TimeGenderated, Source, EntryType, Message | Where-Object {$_.EntryType -eq "warning" -or $_.EntryType -eq "error"}  | out-file -Append $OutputFile
 }
 Function GetBiosInfo 
 {
