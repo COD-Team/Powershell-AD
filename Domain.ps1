@@ -10,8 +10,8 @@
     
     .EXAMPLE
         1. PowerShell 5.1 Command Prompt (Admin) 
-            "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
-        2. Powershell 7.2.1 Command Prompt (Admin) 
+            "PowerShell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        2. PowerShell 7.2.1 Command Prompt (Admin) 
             "pwsh -Executionpolicy Bypass -File PATH\FILENAME.ps1"
 
     .NOTES
@@ -99,7 +99,7 @@ $versionMinimum = [Version]'5.1.000.000'
 
 Measure-Command {
 # Get Domain Name, Creates a DomainName Folder to Store Reports
-# # Added 1/7/21 Powershell 7.2.1 Compatibility Get-WmiObject not compatible with Powershell 7.2.1
+# # Added 1/7/21 PowerShell 7.2.1 Compatibility Get-WmiObject not compatible with PowerShell 7.2.1
 #$DomainName = (Get-WmiObject win32_computersystem).domain
 $DomainName = (Get-CimInstance Win32_ComputerSystem).Domain
 
@@ -546,7 +546,7 @@ Function GetPowerShellVersion
 }
 Function GetExecutionPolicy 
 {
-    Write-Output "Get-EexecutionPolicy - Powershell Settings" | out-file -Append $OutputFile
+    Write-Output "Get-EexecutionPolicy - PowerShell Settings" | out-file -Append $OutputFile
     $Results = Invoke-Command -ComputerName $Online -ErrorAction SilentlyContinue -ScriptBlock {Get-ExecutionPolicy -List}
     $Results | Select-Object PSComputerName, Scope, ExecutionPolicy | Sort-Object PSComputerName, Scope, ExecutionPolicy | Format-Table | out-file -Append $OutputFile
 }    
@@ -680,7 +680,7 @@ Function GetBitlocker
 {
     if (((Get-WindowsEdition -Online) | Select-Object Edition) -notmatch 'Standard')
     {
-# Added 1/7/21 Powershell 7.2.1 Compatibility Get-WmiObject not compatible with Powershell 7.2.1
+# Added 1/7/21 PowerShell 7.2.1 Compatibility Get-WmiObject not compatible with PowerShell 7.2.1
         #$disk= Get-WMIObject -Query "Select * From win32_logicaldisk Where DriveType = '3'"
         $disk= Get-CimInstance -Query "Select * From win32_logicaldisk Where DriveType = '3'"
         foreach ( $drive in $disk ) 
@@ -717,7 +717,7 @@ Function GetSMBShares
 }
 Function GetScheduledTasks 
 {
-    Write-Output "Get-ScheduledTask - Are there tasks not Approved and not used in a Closed Enviroment?" | out-file -Append $OutputFile
+    Write-Output "Get-ScheduledTask - Are there tasks not Approved and not used in a Closed Environment?" | out-file -Append $OutputFile
     $Results = Invoke-Command -ComputerName $Online -ErrorAction SilentlyContinue -ScriptBlock {Get-ScheduledTask}
     $Results | Select-Object PSComputerName, Author, TaskName | Sort-Object PSComputerName, Author, TaskName | out-file -Append $OutputFile
 }
