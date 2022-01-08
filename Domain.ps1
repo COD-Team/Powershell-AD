@@ -1,8 +1,7 @@
-﻿<#
+<#
     .DESCRIPTION
         Script Pulls from the Domain and all computers in the Domain for the following:
-        
-                
+                        
     .PARAMETER NAME
         No Parameters, but control Functions by commenting or uncommenting under $TASKS
 
@@ -10,23 +9,23 @@
         Report found under $logPath below, default is c:\COD-Logs\DOMAINNAME\DATETIME
     
     .EXAMPLE
-        Option 1
-        1. Command Prompt (Admin) "powershell -Executionpolicy Bypass -File PATH\Domain.ps1"
-
-        Option 2
-        1. Run the set-executionpolicy unrestricted or Set-ExecutionPolicy RemoteSigned
-        2. Run Domain.ps1 as administrator
+        1. PowerShell 5.1 Command Prompt (Admin) 
+            "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        2. Powershell 7.2.1 Command Prompt (Admin) 
+            "pwsh -Executionpolicy Bypass -File PATH\FILENAME.ps1"
 
     .NOTES
-        Encryption Method is not returning, Running latest Win10/Server2016. "Manage-BDE -Status" does not return values either.
-        Does return for Standalone Computers, but not Domain Computers. 
-
         Author Perkins
-        Last Update 12/12/21
+        Last Update 1/7/22
+        Updated 1/7/22 Tested and Validated PowerShell 5.1 and 7.2.1
     
         Powershell 5 or higher
         Run as Administrator
         Domain requires RSAT ActiveDriectory tools installed - DC has by Default (Error Checking in Place)
+        
+        Prerequisites
+        https://spork.navsea.navy.mil/nswc-crane-division/evaluate-stig/ 
+        Uncompress into .\evaluate-stig-master 
     
     .FUNCTIONALITY
         PowerShell Language
@@ -34,12 +33,12 @@
     
     .Link
     https://github.com/COD-Team
-    https://youtu.be/8qKRF7SqlOk
-    See README.MD file https://github.com/COD-Team/Powershell-AD/blob/main/README.md
+    See README.md
 
 #>
 
 $Tasks = @(
+    ,"GetEvaluateSTIG"
     ,"GetADComputers"    
     ,"GetWindowsVersion"
     ,"GetBiosInfo"
@@ -87,10 +86,11 @@ $Tasks = @(
     #,"GetDNSCache"
     #,"GetSecEdit"                  # Return a few settings with seperate script - Lockout Duration
     #,"GetDriverHash"               # Incident Response
+    #,"CreateEICAR"
+    #,"CreateDomainEICAR"
     ,"OpenGPResultantSetofPolicy"   # Recommend keep toward bottom of execution to allow all files to be written. 
     ,"LaunchNotepad"
 )
-
 
 #Requires -RunAsAdministrator
 
@@ -98,21 +98,18 @@ $versionMinimum = [Version]'5.1.000.000'
     if ($versionMinimum -gt $PSVersionTable.PSVersion)
     { throw "This script requires PowerShell $versionMinimum" }
 
-# If your computer is NOT on a Domain, Script will exit - Checkout Standalone.ps1 for non-domain computers
-if ($env:computername  -eq $env:userdomain) 
-    {
-        Write-Host -fore red "$env:ComputerName is not joined to a Domain, Script Exiting" 
-        Exit
-    }
-
 Measure-Command {
 # Get Domain Name, Creates a DomainName Folder to Store Reports
-$DomainName = (Get-WmiObject win32_computersystem).domain
+# # Added 1/7/21 Powershell 7.2.1 Compatibility Get-WmiObject not compatible with Powershell 7.2.1
+#$DomainName = (Get-WmiObject win32_computersystem).domain
+$DomainName = (Get-CimInstance Win32_ComputerSystem).Domain
+
 
 # Get Computer Name
 $ComputerName = $env:computername
 
 # Path where the results will be written. Network Share Required and Accessible. 
+#$logpath = "C:\COD-Logs\$DomainName\$(get-date -format "yyyyMMdd-hhmmss")"
 $logpath = "\\DC2016\SHARES\COD-Logs\$DomainName\$(get-date -format "yyyyMMdd-hhmmss")"
     If(!(test-path $logpath))
     {
@@ -122,8 +119,14 @@ $logpath = "\\DC2016\SHARES\COD-Logs\$DomainName\$(get-date -format "yyyyMMdd-hh
 # Counter for Write-Progress
 $Counter = 0
 
+# Added 1/7/21 PowerShell 7.2.1 Compatibility for Out-File not printing escape characters
+if ($PSVersionTable.PSVersion.major -ge 7) {$PSStyle.OutputRendering = 'PlainText'}
+
 # Logfile where all the results are dumped
 $OutputFile = "$logpath\Master.log"
+
+# Returns local path, allows loading .\tools
+$localpath = Get-Location
 
 # Sets Header information for the Reports
 Write-Output "[INFO] Running $PSCommandPath" | Out-File -Append $OutputFile
@@ -185,6 +188,7 @@ if ($Online -ge 1) {
     Write-Output '-----------------' | Out-File -Append $OutputFile
     $Online | Out-File -Append $OutputFile
 }
+
 ###################################################################################################################################################################
 Function GetGPResultantSetofPolicy
 {
@@ -323,6 +327,42 @@ Function GetNetAccounts
         Get-Content -Path $reportpath | Out-File -Append $OutputFile
         Write-Output "----------------------------------------------------------------------------------------------------" | out-file -Append $OutputFile
         }
+}
+Function GetEvaluateSTIG 
+{
+    If (-Not(Test-Path -Path "$localpath\evaluate-stig-master")) {
+        Write-Output "Unable to Locate Evaluate-STIG.ps1 in path $localpath\evaluate-stig-master\PowerShell\Src\Evaluate-STIG\" | out-file -Append $OutputFile
+    }
+    Else {
+    $Online | Out-File $logpath\Computerlist.txt
+    Invoke-Command -ComputerName  $Online -ScriptBlock {Try {If (Get-ChildItem Cert:\LocalMachine\Root | Where-Object Thumbprint -eq 'D73CA91102A2204A36459ED32213B467D7CE97FB') {Write-Host "DoD Root CA 3 certificate is already imported to Local Machine\Root store on $env:ComputerName" -ForegroundColor Cyan} Else {Import-Certificate $PSScriptRoot\evaluate-stig-master\PowerShell\Src\Evaluate-STIG\Prerequisites\Certificates\DoD_Root_CA_3.cer -CertStoreLocation Cert:\LocalMachine\Root | Out-Null; Write-Host "DoD_Root_CA_3.cer successfully imported to Local Machine\Root store on $env:ComputerName" -ForegroundColor Green}} Catch {Write-Host $_.Exception.Message -ForegroundColor Red}}
+    Invoke-Command -ComputerName  $Online -ScriptBlock {Try {If (Get-ChildItem Cert:\LocalMachine\CA | Where-Object Thumbprint -eq '1907FC2B223EE0301B45745BDB59AAD90FE7C5D7') {Write-Host "DOD ID CA-59 certificate is already imported to Local Machine\CA on $env:ComputerName" -ForegroundColor Cyan} Else {Import-Certificate $localpath\evaluate-stig-master\PowerShell\Src\Evaluate-STIG\Prerequisites\Certificates\DOD_ID_CA-59.cer -CertStoreLocation Cert:\LocalMachine\CA | Out-Null; Write-Host "DOD_ID_CA-59.cer successfully imported to Local Machine\CA on $env:ComputerName" -ForegroundColor Green}} Catch {Write-Host $_.Exception.Message -ForegroundColor Red}}
+    Invoke-Command -ComputerName  $Online -ScriptBlock {Try {If (Get-ChildItem Cert:\LocalMachine\TrustedPublisher | Where-Object Thumbprint -eq 'D95F944E33528DC23BEE8672D6D38DA35E6F0017') {Write-Host "CS.NSWCCD.001 certificate is already imported to Local Machine\Trusted Publishers store on $env:ComputerName" -ForegroundColor Cyan} Else {Import-Certificate $localpath\evaluate-stig-master\PowerShell\Src\Evaluate-STIG\Prerequisites\Certificates\CS.NSWCCD.001.cer -CertStoreLocation Cert:\LocalMachine\TrustedPublisher | Out-Null; Write-Host "CS.NSWCCD.001.cer successfully imported to Local Machine\Trusted Publishers store on $env:ComputerName" -ForegroundColor Green}} Catch {Write-Host $_.Exception.Message -ForegroundColor Red}}
+
+    & "$localpath\evaluate-stig-master\PowerShell\Src\Evaluate-STIG\Evaluate-STIG.ps1" -ScanType Classified -ComputerList $logpath\Computerlist.txt -OutputPath $logpath
+    & "$localpath\evaluate-stig-master\PowerShell\Src\Evaluate-STIG\Evaluate-STIG.ps1" -ScanType Classified -OutputPath $logpath
+
+    # Run Summary Report from Evaluate STIG
+    GetStigSummary
+    }
+}
+Function GetStigSummary 
+{
+foreach ($Computer in $Online) {
+    $reportpath = "$logpath\$Computer\SummaryReport.xml"
+    [xml]$xmlData = Get-Content -Path $reportpath
+    $output = $xmlData.Summary.Checklists.ChildNodes | ForEach-Object {
+        [pscustomobject]@{
+            STIG = $_.STIG
+            CAT_I_O = $_.CAT_I.Open
+            CAT_II_O = $_.CAT_II.Open
+            CAT_III_O = $_.CAT_III.Open
+        }
+    }
+    Write-Output "GetStigSummary from Evaluate STIG for $Computer" | out-file -Append $OutputFile
+    Write-Output "Checklist can be opened with DISA STIGVIEWER from \\$Logpath\$Computer\Checklist" | out-file -Append $OutputFile
+    $output | Out-File -Append $OutputFile
+    }
 }
 Function GetDomainUserGroups 
 {
@@ -646,7 +686,9 @@ Function GetBitlocker
 {
     if (((Get-WindowsEdition -Online) | Select-Object Edition) -notmatch 'Standard')
     {
-        $disk= Get-WMIObject -Query "Select * From win32_logicaldisk Where DriveType = '3'"
+# Added 1/7/21 Powershell 7.2.1 Compatibility Get-WmiObject not compatible with Powershell 7.2.1
+        #$disk= Get-WMIObject -Query "Select * From win32_logicaldisk Where DriveType = '3'"
+        $disk= Get-CimInstance -Query "Select * From win32_logicaldisk Where DriveType = '3'"
         foreach ( $drive in $disk ) 
         {
             $Results = Invoke-Command -ComputerName $Online -ErrorAction SilentlyContinue -ScriptBlock {Get-BitLockerVolume -MountPoint $drive.Name}
@@ -684,6 +726,18 @@ Function GetScheduledTasks
     Write-Output "Get-ScheduledTask - Are there tasks not Approved and not used in a Closed Enviroment?" | out-file -Append $OutputFile
     $Results = Invoke-Command -ComputerName $Online -ErrorAction SilentlyContinue -ScriptBlock {Get-ScheduledTask}
     $Results | Select-Object PSComputerName, Author, TaskName | Sort-Object PSComputerName, Author, TaskName | out-file -Append $OutputFile
+}
+Function CreateEICAR 
+{
+    Write-Output "EICAR Virus File Written, Check $logpath for EICAR.txt and check logs." | out-file -Append $OutputFile
+    Write-Output "If $Logpath is a Network Share, Review Host Logs " | out-file -Append $OutputFile
+    set-content "X5O!P%@AP[4`\PZX54(P^)7CC)7}`$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!`$H+H*" -path $logpath\EICAR.txt
+}
+Function CreateDomainEICAR 
+{
+    Write-Output "EICAR Virus File Written, Check $logpath for EICAR.txt and check logs." | out-file -Append $OutputFile
+    Invoke-Command -ComputerName $Online -ErrorAction SilentlyContinue -ScriptBlock {set-content "X5O!P%@AP[4`\PZX54(P^)7CC)7}`$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!`$H+H*" -path C:\EICAR.txt}
+    
 }
 Function GetDiskInfo 
 {
