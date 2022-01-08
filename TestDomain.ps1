@@ -1,37 +1,33 @@
-﻿<#
+<#
     .DESCRIPTION
         Script Attempts to communicate with Active Directory and all Windows Computers in the Domain
         Provides Results and Status to understand if there are connectivity issues. 
         Use at Your Own Risk - This Script does not modify 
 
-    .PARAMETER NAME
-        No Parameters, but control Functions by commenting or uncommenting Functions under $TASKS (See example Task/Function)
-
     .OUTPUTS
-        Report found under $logPath below, Setup Networkshare for \\SERVERNAME\SHARE\COD-Logs\DOMAINNAME\DATETIME
+        Report found under $logPath below, default is c:\COD-Logs\COMPUTERNAME\DATETIME
     
     .EXAMPLE
-        Option 1
-        1. Command Prompt (Admin) Run from the Root where the file and tools are located. 
-        powershell -ExecutionPolicy Bypass -File TestDomain.ps1
+        1. PowerShell 5.1 Command Prompt (Admin) 
+            "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        2. Powershell 7.2.1 Command Prompt (Admin) 
+            "pwsh -Executionpolicy Bypass -File PATH\FILENAME.ps1"
 
     .NOTES
-        Author Perk
-        Last Update 12/27/21
+        Author Perkins
+        Last Update 1/7/22
+        Updated 1/7/22 Tested and Validated PowerShell 5.1 and 7.2.1
     
-        Powershell 5.1 or higher
+        Powershell 5 or higher
         Run as Administrator
-        Domain requires RSAT ActiveDriectory tools installed on Workstation you are Executing From.
-        Windows Servers generally enabled by Default
     
     .FUNCTIONALITY
         PowerShell Language
         Active Directory
     
     .Link
-    https://github.com/COD-Team
-    Youtube Link https://youtu.be/j_m6jr7uVmc
-    See README.MD file https://github.com/COD-Team/Powershell-AD/blob/main/README.md
+        https://github.com/COD-Team
+        YouTube Video https://youtu.be/4LSMP0gj1IQ
 #>
 
 $Tasks = @(
@@ -66,20 +62,26 @@ if ($env:computername  -eq $env:userdomain)
 Measure-Command {
 
 # Get Domain Name, Creates a DomainName Folder to Store Reports
-$DomainName = (Get-WmiObject win32_computersystem).domain
+# Added 1/7/21 Powershell 7.2.1 Compatibility Get-WmiObject not compatible with Powershell 7.2.1
+#$DomainName = (Get-WmiObject win32_computersystem).domain
+$DomainName = (Get-CimInstance Win32_ComputerSystem).Domain
+
 
 # Get Computer Name
 $ComputerName = $env:computername
 
 #Path where the results will be written, suggest network share for best results. 
-$logpath = "C:\COD-Logs\$DomainName\$(get-date -format "yyyyMMdd-hhmmss")"
-#$logpath = "\\DC2016\SHARES\COD-Logs\$DomainName\$(get-date -format "yyyyMMdd-hhmmss")"
+#$logpath = "C:\COD-Logs\$DomainName\$(get-date -format "yyyyMMdd-hhmmss")"
+$logpath = "\\DC2016\SHARES\COD-Logs\$DomainName\$(get-date -format "yyyyMMdd-hhmmss")"
     If(!(test-path $logpath))
     {
           New-Item -ItemType Directory -Force -Path $logpath
     }
 #Counter for Write-Progress
 $Counter = 0
+
+# Added 1/7/21 PowerShell 7.2.1 Compatibility for Out-File not printing escape characters
+if ($PSVersionTable.PSVersion.major -ge 7) {$PSStyle.OutputRendering = 'PlainText'}
 
 # Logfile where all the results are dumped
 $OutputFile = "$logpath\Master.log"
