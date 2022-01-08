@@ -1,38 +1,41 @@
 <#
 
     .DESCRIPTION
-        Script runs across all computers on the DOMAIN for Bitlocker Compliance, also checks TPM Module, FIPS Compliance, BIOS and Local Policy Settings. 
-
-    .EXAMPLE
-        Option 1
-        1. Command Prompt (Admin) "powershell -Executionpolicy Bypass -File PATH\Bitlocker.ps1"
-    
-    .EXAMPLE
-        Option 2
-        1. Run the set-executionpolicy unrestricted or Set-ExecutionPolicy RemoteSigned
-        2. Run Bitlocker.ps1 as administrator
+        Script runs across all computers on the DOMAIN for Bitlocker Compliance, 
+        also checks TPM Module, FIPS Compliance, BIOS and Local Policy Settings. 
 
     .OUTPUTS
-        Report found under $logPath below, default is c:\COD-Logs\DOMAINNAME\DATETIME
+        Report found under $logPath below, default is c:\COD-Logs\COMPUTERNAME\DATETIME
+    
+    .EXAMPLE
+        1. PowerShell 5.1 Command Prompt (Admin) 
+            "powershell -Executionpolicy Bypass -File PATH\FILENAME.ps1"
+        2. Powershell 7.2.1 Command Prompt (Admin) 
+            "pwsh -Executionpolicy Bypass -File PATH\FILENAME.ps1"
 
     .NOTES
-        See README.md (Requires WinRM to be enabled)
         Author Perkins
-        Last Update 12/27/21
-
+        Last Update 1/7/22
+        Updated 1/7/22 Tested and Validated PowerShell 5.1 and 7.2.1
+    
+        Powershell 5 or higher
+        Run as Administrator
+    
     .FUNCTIONALITY
         PowerShell Language
         Active Directory
     
     .Link
-    https://github.com/COD-Team
-
+        https://github.com/COD-Team
+        YouTube Video https://youtu.be/4LSMP0gj1IQ
 #>
 
 Clear-Host
 
 # Get Domain Name, Creates a DomainName Folder to Store Reports
-$ComputerDomain = (Get-WmiObject win32_computersystem).domain
+# # Added 1/7/21 Powershell 7.2.1 Compatibility Get-WmiObject not compatible with Powershell 7.2.1
+#$ComputerDomain = (Get-WmiObject win32_computersystem).domain
+$ComputerDomain = (Get-CimInstance Win32_ComputerSystem).Domain
 
 #### Using Comment (On/Off) choose $DomainComputers you want to use, 3 options
 
@@ -56,6 +59,10 @@ $logpath = "C:\COD-Logs\$ComputerDomain\$(get-date -format "yyyyMMdd-hhmmss")"
           New-Item -ItemType Directory -Force -Path $logpath
     }
 
+# Added 1/7/21 PowerShell 7.2.1 Compatibility for Out-File not printing escape characters 
+if ($PSVersionTable.PSVersion.major -ge 7) {$PSStyle.OutputRendering = 'PlainText'}
+
+
 #OutputLog is the name if the file for all the results. 
 $OutputLog = "$logpath\BitLocker.log"
 
@@ -76,7 +83,9 @@ Function GetBitlocker
     $GetTPM = Get-TPM
 
     # Gets BIOS information applicable to BitLocker and Computer Type
-    $BIOSInfo= Get-WmiObject -Class Win32_Bios -ErrorAction SilentlyContinue
+    # Added 1/7/21 Powershell 7.2.1 Compatibility Get-WmiObject not compatible with Powershell 7.2.1
+    #$BIOSInfo = Get-WimObject -Class Win32_Bios #-ErrorAction SilentlyContinue
+    $BIOSInfo = Get-CimInstance -Class Win32_Bios -ErrorAction SilentlyContinue
 
     # This Section is all Reporting
     $Report=[PSCustomObject] [ordered]@{
